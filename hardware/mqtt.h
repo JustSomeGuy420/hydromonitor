@@ -63,7 +63,7 @@ void MQTT_Connect( void * pvParameters ){
         Serial.printf("\nMQTT Connection ID: %s ", clientID);      
 
         /* connect now */
-        if (mqtt.connect(clientID)) { 
+        if (mqtt.connect(clientID, mqtt_username, mqtt_password)) { 
             Serial.println("\n\n***** MQTT CONNECTED! *****\n\n");             
             
             const uint8_t size = sizeof(subtopic)/sizeof(subtopic[0]);
@@ -92,7 +92,7 @@ void MQTT_ConnectFunction( void ) {
   xReturned = xTaskCreatePinnedToCore(
                 MQTT_Connect,     /* Function that implements the task. */
                 "MQTT CONNECT",    /* Text name for the task. */
-                2048,                     /* Stack size (Bytes in ESP32, words in Vanilla FreeRTOS) */
+                4096,                     /* Stack size (Bytes in ESP32, words in Vanilla FreeRTOS) */
                 ( void * ) 1,             /* Parameter passed into the task. */
                 8,                        /* Priority at which the task is created. */
                 &xMQTT_Connect,    /* Used to pass out the created task's handle. */
@@ -180,20 +180,16 @@ void checkHEAP(const char* Name){
 
 
 void initialize(void){
-  vNTPFunction();     // INIT NTP PROTOCOL FOR TIME KEEPING   
-
-  //CONNECT TO WIFI
-  Serial.printf("Connecting to %s \n", ssid);
+  // Connecting to a Wi-Fi network
   WiFi.begin(ssid, password);
-  
   while (WiFi.status() != WL_CONNECTED) {
-      vTaskDelay(1000 / portTICK_PERIOD_MS); 
-      Serial.print(".");
+    delay(500);
+    Serial.println("Connecting to WiFi..");
   }
+  Serial.println("Connected to the Wi-Fi network");
 
-  Serial.println("\n\n***** Wi-Fi CONNECTED! *****\n\n");
-   
-  initMQTT();          // INIT MQTT  
+  initMQTT();
+  vNTPFunction();     // INIT NTP PROTOCOL FOR TIME KEEPING    
   vUpdateFunction();
    
 }
