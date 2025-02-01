@@ -41,10 +41,11 @@
 #define ARDUINOJSON_USE_DOUBLE      1 
 #define NUM_LEDS 7
 
-#define DATA_PIN 12
+#define DATA_PIN 27
+#define CLOCK_PIN 13
 
 // DEFINE THE CONTROL PINS FOR THE DHT22
-#define DHTPIN 14
+#define DHTPIN 26
 #define DHTTYPE DHT22
 
 
@@ -117,6 +118,20 @@ void setup() {
 
   dht.begin();
   
+  for(int x=0; x<7; x++){
+      ledArray[x] = CRGB( 240, 0, 240); // R, G, B range for each value is 0 to 255
+      FastLED.setBrightness( 200 ); // Ranges from 0 to 255
+      FastLED.show(); // Send changes to LED array
+      vTaskDelay(50 / portTICK_PERIOD_MS);
+    }
+
+    // 3. ITERATIVELY, TURN OFF ALL REMAINING LED(s).
+    for(int x=0; x<NUM_LEDS; x++){
+      ledArray[x] = CRGB::Black;
+      FastLED.setBrightness( 200 );
+      FastLED.show();
+      vTaskDelay(50 / portTICK_PERIOD_MS);
+    }
   /* Add all other necessary sensor Initializations and Configurations here */
 
   initialize();     // INIT WIFI, MQTT & NTP 
@@ -128,15 +143,6 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:       
   vTaskDelay(1000 / portTICK_PERIOD_MS); 
-
-  /*// Turn the LED on, then pause
-  leds[0] = CRGB::Red;
-  FastLED.show();
-  delay(500);
-  // Now turn the LED off, then pause
-  leds[0] = CRGB::Black;
-  FastLED.show();
-  delay(500);*/
 }
 
 
@@ -249,6 +255,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
     const int green = doc["color"]["g"];
     const int blue = doc["color"]["b"];
     const int alpha = doc["color"]["a"];
+
 
     // 2. ITERATIVELY, TURN ON LED(s) BASED ON THE VALUE OF NODES. Ex IF NODES = 2, TURN ON 2 LED(s)
     for(int x=0; x<leds; x++){
